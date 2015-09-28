@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module cursive.leiningen.project.LeiningenProjectsManager.isLeinModule="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/dev-resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="jdk" jdkName="1.8_u66" jdkType="JavaSDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Leiningen: cheshire:5.5.0" level="project" />
+    <orderEntry type="library" name="Leiningen: clojure-complete:0.2.3" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.7.0" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.nrepl:0.2.6" level="project" />
+    <orderEntry type="library" name="Leiningen: org.dcm4che.tool/dcm4che-tool-dcm2json:3.3.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.dcm4che/dcm4che-core:3.3.7" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.5.3" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.dataformat/jackson-dataformat-cbor:2.5.3" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.dataformat/jackson-dataformat-smile:2.5.3" level="project" />
+    <orderEntry type="library" name="Leiningen: tigris:0.1.1" level="project" />
+    <orderEntry type="library" name="Leiningen: org.dcm4che.tool/dcm4che-tool-common:3.3.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.dcm4che/dcm4che-json:3.3.7" level="project" />
+    <orderEntry type="library" name="Leiningen: commons-cli:1.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.dcm4che/dcm4che-net:3.3.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.dcm4che/dcm4che-conf-core-api:3.3.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.glassfish/javax.json:1.0.4" level="project" />
+    <orderEntry type="library" name="Leiningen: junit:4.11" level="project" />
+    <orderEntry type="library" name="Leiningen: org.dcm4che/dcm4che-dict:3.3.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/slf4j-api:1.7.5" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Leiningen: org.slf4j/slf4j-log4j12:1.7.5" level="project" />
+    <orderEntry type="library" name="Leiningen: org.hamcrest/hamcrest-core:1.3" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Leiningen: log4j:1.2.17" level="project" />
+  </component>
+</module>
