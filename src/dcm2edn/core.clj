@@ -8,9 +8,12 @@
     :main true))
 
 (def dcmfile "/Users/philchen/Project/database_test/eclipse/imrt/CT.RT001921_1.dcm")
+(def dcmfile2 "C:\\dicom.dcm")
+
+(def ^:dynamic *dcm-encoding* "UTF8")
 
 (defn read-file
-  [file]
+  ([file]
   (with-open [byte-array (ByteArrayOutputStream.)
               output-new (PrintStream. byte-array)]
     (let [output-old (System/out)]
@@ -19,9 +22,11 @@
          (DicomInputStream.)
          (.parse (Dcm2Json.)))
       (System/setOut output-old)
-      (-> (.toString byte-array "UTF8")
+      (-> (.toString byte-array *dcm-encoding*)
           (json/parse-string)))))
-
+  ([file encoding]
+  (binding [*dcm-encoding* encoding]
+    (read-file file))))
 
 (defn -main
   [file]
