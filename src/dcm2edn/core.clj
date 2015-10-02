@@ -1,9 +1,13 @@
 (ns dcm2edn.core
   (:require [cheshire.core :as json]
-            [clojure.pprint])
+            [clojure.pprint]
+            [clojure.java.io :as io])
   (:import (org.dcm4che3.tool.dcm2json Dcm2Json)
            (org.dcm4che3.io DicomInputStream)
-           (java.io File ByteArrayOutputStream PrintStream))
+           (java.io File ByteArrayOutputStream PrintStream)
+           ;(javafx.scene.image WritableImage)
+           (java.nio ByteBuffer ByteOrder)
+           )
   (:gen-class
     :main true))
 
@@ -28,8 +32,20 @@
   (binding [*dcm-encoding* encoding]
     (read-file file))))
 
+(def buf (ByteBuffer/allocate 600000))
+(def f (io/input-stream dcmfile))
+(.order buf ByteOrder/LITTLE_ENDIAN)
+(.read f (.array buf) 1728 524288)
+(def coll (repeatedly #(.getShort buf)))
+
+;(def img (WritableImage. 512 512))
+;(def buf (byte-array 600000))
+;(def f (input-stream dcmfile))
+;(.read f 1728 524288)
+
 (defn -main
   [file]
   (println file)
   (clojure.pprint/pprint (read-file file))
 )
+;(import 'java.nio.ByteBuffer)
