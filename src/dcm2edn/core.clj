@@ -5,7 +5,7 @@
   (:import (org.dcm4che3.tool.dcm2json Dcm2Json)
            (org.dcm4che3.io DicomInputStream)
            (java.io File ByteArrayOutputStream PrintStream)
-           ;(javafx.scene.image WritableImage)
+           (javafx.scene.image WritableImage)
            (java.nio ByteBuffer ByteOrder)
            )
   (:gen-class
@@ -32,16 +32,14 @@
   (binding [*dcm-encoding* encoding]
     (read-file file))))
 
-(def buf (ByteBuffer/allocate 600000))
-(def f (io/input-stream dcmfile))
+(def buf (ByteBuffer/allocate 524288))
+(def f (io/input-stream dcmfile2))
 (.order buf ByteOrder/LITTLE_ENDIAN)
-(.read f (.array buf) 1728 524288)
+(.skip f 2404)
+(.read f (.array buf) 0 524288)
 (def coll (repeatedly #(.getShort buf)))
 
-;(def img (WritableImage. 512 512))
-;(def buf (byte-array 600000))
-;(def f (input-stream dcmfile))
-;(.read f 1728 524288)
+(def img (WritableImage. 512 512))
 
 (defn -main
   [file]
