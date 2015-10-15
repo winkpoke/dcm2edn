@@ -46,9 +46,8 @@
     (read-file file))))
 
 (defn winlevel
-  "Return a function that tranforms a pixel value into
-  gray value [0, 255] based on the input window level
-  and window width."
+  "Return a function that calculates the gray value [0, 255] 
+   in terms of window level and window width."
   [wl  ww]
   (let [half-ww (/ ww 2.0)
         k-      (- wl half-ww)
@@ -127,7 +126,12 @@
 
 
 (def img (deref (get-image-byte-buff)))
-;(for [i (take 1500000 img) :when (> i -50)] i)
+(for [i (take 1500000 img) :when (> i -50)] i)
+
+
+(+ 1 1)
+
+
 (take 1000 pixel-value-array)
 
 ;(pprint (read-file dcmfile))
