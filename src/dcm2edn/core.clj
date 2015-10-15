@@ -45,16 +45,41 @@
   (binding [*dcm-encoding* encoding]
     (read-file file))))
 
-(def buf (ByteBuffer/allocate 600000))
-(def f (io/input-stream dcmfile))
-(.order buf ByteOrder/LITTLE_ENDIAN)
-(.read f (.array buf) 1728 524288)
-(def coll (repeatedly #(.getShort buf)))
+(defn winlevel
+  "Return a function that tranforms a pixel value into
+  gray value [0, 255] based on the input window level
+  and window width."
+  [wl  ww]
+  (let [half-ww (/ ww 2.0)
+        k-      (- wl half-ww)
+        k+      (+ wl half-ww)]
+    (fn [v]
+      (cond
+        (<= v k-) 0
+        (>= v k+) 255
+        :else      (Math/round
+                     (* 255
+                        (/ (- v k-)
+                           ww)))))))
+;(time (do
 
-;(def img (WritableImage. 512 512))
-;(def buf (byte-array 600000))
-;(def f (input-stream dcmfile))
-;(.read f 1728 524288)
+(defn read-image-data
+  [f offset len & {:keys [byte-order]
+                   :or {byte-order :little-endian}} ]
+  (let [buf (ByteBuffer/allocate len)]
+    (.order buf (case byte-order
+                  :little-endian ByteOrder/LITTLE_ENDIAN
+                  :big-endian ByteOrder/BIG_ENDIAN
+                  ByteOrder/LITTLE_ENDIAN))
+    (doto f
+      (.skip offset)
+      (.read (.array buf) 0 len))
+    (let [pixel-value-array (short-array (/ len 2))]
+      (.. buf
+          (rewind)
+          (asShortBuffer)
+          (get pixel-value-array))
+      pixel-value-array)))
 
 
 (def pixel-value-array 
