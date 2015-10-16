@@ -5,7 +5,6 @@
   (:import (org.dcm4che3.tool.dcm2json Dcm2Json)
            (org.dcm4che3.io DicomInputStream)
            (java.io File ByteArrayOutputStream PrintStream)
-           ;(javafx.scene.image WritableImage)
            (java.nio ByteBuffer ByteOrder)
            )
   (:gen-class
