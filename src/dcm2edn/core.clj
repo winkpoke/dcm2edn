@@ -12,6 +12,11 @@
 
 ;(set! *warn-on-reflection* true)
 ;(def dcmfile "/Users/philchen/Project/database_test/eclipse/imrt/CT.RT001921_1.dcm")
+
+
+(def tag-window-center "00281050")
+(def tag-window-width "00281051")
+
 (def dcmfile "/Users/philchen/Project/database_test/Pinnacle/cao wen juan_CRT/CT.1.2.840.113619.2.25.4.2147483647.1439195343.543.dcm")
 (def dcmfile2 "C:\\dicom.dcm")
 
@@ -24,10 +29,9 @@
 
 (def ^:dynamic *dcm-encoding* "UTF8")
 
-(defn dcm-input-stream
-  [^String fn]
-  (-> (File. fn)
-      (DicomInputStream.)))
+(defn vget
+  [edn tag]
+  (get-in edn [tag "Value"]))
 
 (defn read-file
   ([file]
@@ -102,7 +106,6 @@
    (let [size (alength pixel-array)
          ^bytes img-array (byte-array (* 3 size))
          laps size]
-     (println "size=" size)
      (loop [i 0]
        (when (< i laps)
          (let [v (aget ^shorts pixel-array i)
