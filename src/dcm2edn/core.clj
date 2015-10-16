@@ -9,7 +9,8 @@
            (java.nio ByteBuffer ByteOrder)
            )
   (:gen-class
-    :main true))
+   :main true))
+
 ;(set! *warn-on-reflection* true)
 ;(def dcmfile "/Users/philchen/Project/database_test/eclipse/imrt/CT.RT001921_1.dcm")
 (def dcmfile "/Users/philchen/Project/database_test/Pinnacle/cao wen juan_CRT/CT.1.2.840.113619.2.25.4.2147483647.1439195343.543.dcm")
@@ -60,7 +61,7 @@
                      (* 255
                         (/ (- v k-)
                            ww)))))))
-;(time (do
+
 
 (defn read-image-data
   [f offset len & {:keys [byte-order]
@@ -80,38 +81,50 @@
           (get pixel-value-array))
       pixel-value-array)))
 
-
-(def pixel-value-array 
-  (read-image-data 
-    (io/input-stream dcmfile) 
-    dcm-img-offset dcm-img-size 
+(def pixel-value-array
+  (read-image-data
+    (io/input-stream dcmfile)
+    dcm-img-offset dcm-img-size
     :byte-order :little-endian))
 
+(defmacro gbyte
+  "Convert a java short within the range [0, 255] to a java byte.
+   The input value must be between [0, 255], otherwise it throws
+   IllegalArgumentException. Use macro for performace concern."
+  [f v]
+  `(byte (- (short (~f ~v)) 128)))
+
+
+(time (do
+
 (defn calc-image-byte-buff
-  [f]
+  [f ^shorts pixel-array]
   (delay
-    (let [^ByteBuffer img-buf (ByteBuffer/allocate (* 3 (/ dcm-img-size 2)))
-          ^bytes img-array (.array ^ByteBuffer img-buf)
-          laps (/ dcm-img-size 2)]
-      (loop [i 0]
-        (when (< i laps)
-          (let [v (aget ^shorts pixel-value-array i)
-                pixel-value (byte (- (short (f v)) 128))
-                idx (* i 3)]
-            (aset ^bytes img-array idx pixel-value)
-            (aset ^bytes img-array (+ 1 idx) pixel-value)
-            (aset ^bytes img-array (+ 2 idx) pixel-value)
-            (recur (inc i)))))
-      img-array)))
+   (let [size (alength pixel-array)
+         ^bytes img-array (byte-array (* 3 size))
+         laps size]
+     (println "size=" size)
+     (loop [i 0]
+       (when (< i laps)
+         (let [v (aget ^shorts pixel-array i)
+               pixel-value (gbyte f v)
+               idx (* i 3)]
+           ;(print i " ")
+           (aset ^bytes img-array idx pixel-value)
+           (aset ^bytes img-array (+ 1 idx) pixel-value)
+           (aset ^bytes img-array (+ 2 idx) pixel-value)
+           (recur (inc i)))))
+     img-array)))
 
 (defn get-image-byte-buff []
-  (calc-image-byte-buff (winlevel window-level window-width)))
+  (calc-image-byte-buff (winlevel window-level window-width)
+                        pixel-value-array))
 
 ;(def coll (repeatedly #(.getShort buf)))
 ;(.close f)
 
 (deref (get-image-byte-buff))
-;))
+))
 
 
 
@@ -125,42 +138,3 @@
 ; REPL
 
 
-(def img (deref (get-image-byte-buff)))
-(for [i (take 1500000 img) :when (> i -50)] i)
-
-
-(+ 1 1)
-
-
-(take 1000 pixel-value-array)
-
-;(pprint (read-file dcmfile))
-
-;(def buf (ByteBuffer/allocate dcm-img-size))
-;(def f (io/input-stream dcmfile))
-;(.order buf (case byte-order
-;              :little-endian ByteOrder/LITTLE_ENDIAN
-;              :big-endian ByteOrder/BIG_ENDIAN
-;              ByteOrder/LITTLE_ENDIAN))
-;(.skip f dcm-img-offset)
-;(.read f (.array buf) 0 dcm-img-size)
-;
-;(def pixel-value-array (short-array (/ dcm-img-size 2)))
-;(.rewind buf)
-;(-> buf
-;    (.asShortBuffer)
-;    (.get pixel-value-array))
-
-;(import 'java.nio.ByteBuffer)
-
-;(def func (hu2gray window-level window-width))
-
-;(def img-buf (ByteBuffer/allocate 786432))
-;(def ^bytes img-array (.array ^ByteBuffer img-buf))
-
-;(def ff (map #(* 2.0 %) coll))
-
-;(def img (WritableImage. 512 512))
-;(def buf (byte-array 600000))
-;(def f (input-stream dcmfile))
-;(.read f 1728 524288)
