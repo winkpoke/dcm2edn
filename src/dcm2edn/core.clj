@@ -3,7 +3,7 @@
             [clojure.pprint]
             [clojure.java.io :as io])
   (:import [org.dcm4che3.tool.dcm2json Dcm2Json]
-           [org.dcm4che3.io DicomInputStream DicomInputStream$IncludeBulkData]
+           [org.dcm4che3.io DicomInputStream DicomInputStream$IncludeBulkData DicomStreamException]
            [java.io File ByteArrayOutputStream PrintStream OutputStream]
            [java.nio ByteBuffer ByteOrder]
            [javax.json Json]
@@ -30,8 +30,6 @@
 
 (def window-level 40.0)
 (def window-width 400.0)
-
-(def ^:dynamic *dcm-encoding* "UTF8")
 
 (defn vget
   [edn tag]
@@ -61,9 +59,12 @@
         :or {encoding "UTF8"}}]
   (with-open [byte-array (ByteArrayOutputStream.)
               output-new (PrintStream. byte-array)]
-    (-> f
-        (DicomInputStream.)
-        (parse output-new))
+    (try
+      (-> f
+         (DicomInputStream.)
+         (parse output-new))
+      (catch DicomStreamExceptio e
+        nil))
     (-> (.toString byte-array ^String encoding)
         (json/parse-string))))
 
@@ -101,7 +102,7 @@
 (defn read-image-data
   [f offset len & {:keys [byte-order]
                    :or {byte-order :little-endian}} ]
-  (let [buf (ByteBuffer/allocate len)] 
+  (let [buf (ByteBuffer/allocate len)]
     (.order buf (case byte-order
                   :little-endian ByteOrder/LITTLE_ENDIAN
                   :big-endian ByteOrder/BIG_ENDIAN
@@ -143,7 +144,6 @@
          (let [v (aget ^shorts pixel-array i)
                pixel-value (gbyte f v)
                idx (* i 3)]
-           ;(print i " ")
            (aset ^bytes img-array idx pixel-value)
            (aset ^bytes img-array (+ 1 idx) pixel-value)
            (aset ^bytes img-array (+ 2 idx) pixel-value)
@@ -153,13 +153,6 @@
 (defn get-image-byte-buff []
   (calc-image-byte-buff (winlevel window-level window-width)
                         pixel-value-array))
-
-;; (defn get-image-byte-buff []
-;;   (calc-image-byte-buff (winlevel-inline window-level window-width)
-;;                         pixel-value-array))
-
-;(def coll (repeatedly #(.getShort buf)))
-;(.close f)
 
 (deref (get-image-byte-buff))
 ))
