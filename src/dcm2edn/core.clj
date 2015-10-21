@@ -2,13 +2,15 @@
   (:require [cheshire.core :as json]
             [clojure.pprint]
             [clojure.java.io :as io])
-  (:import (org.dcm4che3.tool.dcm2json Dcm2Json)
-           (org.dcm4che3.io DicomInputStream)
-           (java.io File ByteArrayOutputStream PrintStream)
-           (java.nio ByteBuffer ByteOrder)
-           )
+  (:import [org.dcm4che3.tool.dcm2json Dcm2Json]
+           [org.dcm4che3.io DicomInputStream DicomInputStream$IncludeBulkData]
+           [java.io File ByteArrayOutputStream PrintStream OutputStream]
+           [java.nio ByteBuffer ByteOrder]
+           [javax.json Json]
+           [org.dcm4che3.json JSONWriter])
   (:gen-class
    :main true))
+
 
 ;(set! *warn-on-reflection* true)
 ;(def dcmfile "/Users/philchen/Project/database_test/eclipse/imrt/CT.RT001921_1.dcm")
@@ -19,6 +21,8 @@
 
 (def dcmfile "/Users/philchen/Project/database_test/Pinnacle/cao wen juan_CRT/CT.1.2.840.113619.2.25.4.2147483647.1439195343.543.dcm")
 (def dcmfile2 "C:\\dicom.dcm")
+
+(def dcmdir "/Users/philchen/Project/database_test/Pinnacle/cao wen juan_CRT/")
 
 (def dcm-img-offset 2404)
 (def dcm-img-size (* 512 512 2))
@@ -33,21 +37,50 @@
   [edn tag]
   (get-in edn [tag "Value"]))
 
-(defn read-file
-  ([file]
+(defn create-json-generator [^OutputStream out]
+  (let [m (hash-map)]
+    (.createGenerator (Json/createGeneratorFactory m) out)))
+
+(defn parse
+  [^DicomInputStream in out]
+  (doto in
+    (.setBulkDataDirectory nil)
+    (.setBulkDataFilePrefix "blk")
+    (.setBulkDataFileSuffix nil)
+    (.setConcatenateBulkDataFiles false)
+    (.setIncludeBulkData DicomInputStream$IncludeBulkData/URI))
+  (let [json-gen (create-json-generator out)
+        json-writer (JSONWriter. json-gen)]
+    (doto in
+      (.setDicomInputHandler json-writer)
+      (.readDataset -1 -1))
+    (.flush json-gen)))
+
+(defn- read-file-impl
+  [f & {:keys [encoding]
+        :or {encoding "UTF8"}}]
   (with-open [byte-array (ByteArrayOutputStream.)
               output-new (PrintStream. byte-array)]
-    (let [output-old (System/out)]
-      (System/setOut output-new)
-      (->> (File. ^String file)
-         (DicomInputStream.)
-         (.parse (Dcm2Json.)))
-      (System/setOut output-old)
-      (-> (.toString byte-array ^String *dcm-encoding*)
-          (json/parse-string)))))
-  ([file encoding]
-  (binding [*dcm-encoding* encoding]
-    (read-file file))))
+    (-> f
+        (DicomInputStream.)
+        (parse output-new))
+    (-> (.toString byte-array ^String encoding)
+        (json/parse-string))))
+
+(defmulti read-file
+  (fn [f & _]
+    (cond
+      (instance? String f) :string
+      (instance? File f) :file
+      :else :default)))
+
+(defmethod read-file :string
+  [f & r]
+  (apply read-file-impl (cons (File. f) r)))
+
+(defmethod read-file :file
+  [f & r]
+  (apply read-file-impl (cons f r)))
 
 (defn winlevel
   "Return a function that calculates the gray value [0, 255] 
@@ -60,16 +93,15 @@
       (cond
         (<= v k-) 0
         (>= v k+) 255
-        :else      (Math/round
-                     (* 255
-                        (/ (- v k-)
-                           ww)))))))
-
+        :else     (Math/round
+                    (* 255
+                       (/ (- v k-)
+                          ww)))))))
 
 (defn read-image-data
   [f offset len & {:keys [byte-order]
                    :or {byte-order :little-endian}} ]
-  (let [buf (ByteBuffer/allocate len)]
+  (let [buf (ByteBuffer/allocate len)] 
     (.order buf (case byte-order
                   :little-endian ByteOrder/LITTLE_ENDIAN
                   :big-endian ByteOrder/BIG_ENDIAN
@@ -122,6 +154,10 @@
   (calc-image-byte-buff (winlevel window-level window-width)
                         pixel-value-array))
 
+;; (defn get-image-byte-buff []
+;;   (calc-image-byte-buff (winlevel-inline window-level window-width)
+;;                         pixel-value-array))
+
 ;(def coll (repeatedly #(.getShort buf)))
 ;(.close f)
 
@@ -129,14 +165,9 @@
 ))
 
 
-
 (defn -main
   [file]
   (println file)
   (clojure.pprint/pprint (read-file file))
 )
-
-; -----------------------------------------------------------
-; REPL
-
 
