@@ -9,6 +9,6 @@
                  [org.dcm4che/dcm4che-core "3.3.7"]
                  [org.dcm4che.tool/dcm4che-tool-dcm2json "3.3.7"]
                 ]
-  :repositories [["dcm4che" "http://www.dcm4che.org/maven2"]]
+  :repositories [["dcm4che" "https://www.dcm4che.org/maven2"]]
   :main dcm2edn.core
   :aot :all)

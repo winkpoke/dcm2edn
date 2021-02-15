@@ -63,7 +63,7 @@
       (-> f
          (DicomInputStream.)
          (parse output-new))
-      (catch DicomStreamExceptio e
+      (catch DicomStreamException e
         nil))
     (-> (.toString byte-array ^String encoding)
         (json/parse-string))))
@@ -117,12 +117,6 @@
           (get pixel-value-array))
       pixel-value-array)))
 
-(def pixel-value-array
-  (read-image-data
-    (io/input-stream dcmfile)
-    dcm-img-offset dcm-img-size
-    :byte-order :little-endian))
-
 (defmacro gbyte
   "Convert a java short within the range [0, 255] to a java byte.
    The input value must be between [0, 255], otherwise it throws
@@ -150,11 +144,17 @@
            (recur (inc i)))))
      img-array)))
 
-(defn get-image-byte-buff []
+(comment def pixel-value-array
+  (read-image-data
+    (io/input-stream dcmfile)
+    dcm-img-offset dcm-img-size
+    :byte-order :little-endian))
+
+(comment defn get-image-byte-buff []
   (calc-image-byte-buff (winlevel window-level window-width)
                         pixel-value-array))
 
-(deref (get-image-byte-buff))
+(comment deref (get-image-byte-buff))
 ))
 
 
